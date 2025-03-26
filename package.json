@@ -1,5 +1,6 @@
 {
   "name": "latency-check",
+  "type": "module",
   "version": "1.0.0",
   "description": "A CLI tool to measure API response latency",
   "keywords": [
