@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
 import { program } from "commander";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import fs from "fs/promises";
 import prettyMs from "pretty-ms";
+
+type Methods = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD";
 
 // Define CLI options and arguments using Commander.js
 program
@@ -12,20 +14,20 @@ program
 	.option("-d, --decimal", "Show timing with 2 decimal places")
 	.option("-o, --output", "Append output to response_time_[year_month_day].txt")
 	.option("-b, --body <body>", 'Request body (e.g., \'{"key":"value"}\' or plain text)')
-	.option("-h, --header <header>", 'Header in "key:value" format (repeatable)', collectHeaders, [])
+	.option("-h, --header <header>", 'Header in "key:value" format (repeatable)', collectHeaders)
 	.option("-t, --timeout <sec>", "Timeout in seconds", parseInt)
 	.argument("[method]", "HTTP method (GET, POST, PUT, etc.), defaults to GET", "GET")
 	.argument("<url>", "Target URL")
 	.action(measureResponseTime);
 
 // Helper to collect multiple headers
-function collectHeaders(value, previous) {
+function collectHeaders(value: string, previous: Record<string, string>) {
 	const [key, valuePart] = value.split(":").map((s) => s.trim());
 	if (!key || !valuePart) throw new Error('Headers must be in "key:value" format');
 	return { ...previous, [key]: valuePart };
 }
 
-async function measureResponseTime(method, url, options) {
+async function measureResponseTime(method: Methods, url: string, options: Record<string, any>) {
 	const { decimal, output, body, header, timeout } = options;
 
 	if (body && ["GET", "HEAD"].includes(method.toUpperCase())) {
@@ -41,7 +43,7 @@ async function measureResponseTime(method, url, options) {
 		const start = process.hrtime();
 
 		// Prepare Axios config
-		const config = {
+		const config: AxiosRequestConfig = {
 			method: method.toUpperCase(),
 			url,
 			headers: header,
